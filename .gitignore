@@ -1,0 +1,8 @@
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 生产环境密钥
+.secrets
+.credentials
