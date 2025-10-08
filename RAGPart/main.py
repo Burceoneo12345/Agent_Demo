@@ -1,4 +1,3 @@
-import os
 from typing import List, Tuple
 
 # Third-party library imports
