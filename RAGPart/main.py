@@ -4,6 +4,7 @@ from typing import List, Tuple
 import chromadb
 from dotenv import load_dotenv, find_dotenv
 from google import genai
+from google.genai import types
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
 # --- Main RAG Pipeline Class ---
@@ -29,7 +30,7 @@ class RAGPipeline:
         Initializes the pipeline by loading all necessary models and setting up the vector database.
         This ensures that models are loaded only once.
         """
-        print("🚀 Initializing RAG Pipeline...")
+        print(" Initializing RAG Pipeline...")
 
         # 1. Load models (this happens only once)
         print(f"   - Loading embedding model: {embedding_model_name}")
@@ -51,7 +52,7 @@ class RAGPipeline:
         self.chromadb_client = chromadb.EphemeralClient()
         self.chroma_collection = self.chromadb_client.get_or_create_collection(name=collection_name)
         
-        print("✅ Pipeline initialized successfully!")
+        print(" Pipeline initialized successfully!")
 
     def _split_into_chunks(self, doc_file: str) -> List[str]:
         """Splits a document into chunks based on double newlines."""
@@ -61,7 +62,7 @@ class RAGPipeline:
 
     def add_document(self, doc_file: str) -> None:
         """Processes and stores a document in the vector database."""
-        print(f"\n📄 Processing and embedding document: {doc_file}")
+        print(f"\n Processing and embedding document: {doc_file}")
         chunks = self._split_into_chunks(doc_file)
         
         embeddings = self.embedding_model.encode(
@@ -108,12 +109,16 @@ class RAGPipeline:
 
         请基于上述内容作答，不要编造信息。"""
 
-        print("\n📝 Generating final answer with the following prompt:")
+        print("\n Generating final answer with the following prompt:")
         print("--------------------")
         print(prompt)
         print("--------------------")
 
-        response = self.generative_model.models.generate_content(model=self.generative_model_name,contents=prompt)
+        response = self.generative_model.models.generate_content(model=self.generative_model_name,
+                                                                 contents=prompt,
+                                                                 config=types.GenerateContentConfig(
+                                                                     thinking_config=types.ThinkingConfig(thinking_budget=0)
+                                                                 ))
         return response.text
 
     def ask(self, query: str, retrieve_top_k: int = 5, rerank_top_k: int = 3) -> str:
@@ -121,7 +126,7 @@ class RAGPipeline:
         The main method to ask a question to the RAG pipeline.
         It orchestrates the retrieve, rerank, and generate steps.
         """
-        print(f"\n🔍 Received query: '{query}'")
+        print(f"\n Received query: '{query}'")
         
         # 1. Retrieve relevant documents
         print(f"   - Retrieving top {retrieve_top_k} chunks...")
@@ -156,6 +161,6 @@ if __name__ == "__main__":
     
     # 4. Print the final result
     print("\n\n====================")
-    print("✨ Final Answer:")
+    print(" Final Answer:")
     print("====================")
     print(final_answer)
